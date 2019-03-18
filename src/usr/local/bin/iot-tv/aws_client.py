@@ -38,13 +38,17 @@ class callbackContainer:
         update_shadow(self.shadowInstance, ent_center.get_status(), request_counter)
 
 ent_center = EntCenter.EntertainmentCenter()
-
-iot_client = AWSIoTMQTTShadowClient("Entertainment-Center")
-iot_client.configureEndpoint("a59arxnqr4t9k-ats.iot.us-east-1.amazonaws.com", 8883)
-cert_path = "/home/pi/echo-certs"
-iot_client.configureCredentials("%s/AmazonRootCA1.pem" % cert_path,
-                                "%s/f6c3992e2b-private.pem.key" % cert_path,
-                                "%s/f6c3992e2b-certificate.pem.crt" % cert_path)
+iot_tv_config = {}
+with open('/etc/iot-tv/iot-tv.config') as conf:
+    iot_tv_config = json.load(conf)
+iot_client = AWSIoTMQTTShadowClient(iot_tv_config['shadowClient'])
+iot_client.configureEndpoint(iot_tv_config['endpointHost'], iot_tv_config['endpointPort'])
+cert_path = iot_tv_config['certPath']
+root_cert = iot_tv_config['rootCACert']
+cert_prefix = iot_tv_config['certPrefix']
+iot_client.configureCredentials("%s/%s" % (cert_path, root_cert),
+                                "%s/%s-private.pem.key" % (cert_path, cert_prefix),
+                                "%s/%s-certificate.pem.crt" % (cert_path, cert_prefix))
 iot_client.connect()
 
 iot_handler = iot_client.createShadowHandlerWithName("Entertainment-Center", True)
