@@ -1,0 +1,9 @@
+[Unit]
+Description=IoT TV and Entertainment Center
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/iot-tv-run.sh
+
+[Install]
+WantedBy=multi-user.target
