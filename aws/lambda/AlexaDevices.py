@@ -1,5 +1,6 @@
 import json
 import time
+import copy
 
 
 def utc_timestamp():
@@ -44,9 +45,9 @@ class AlexaEntertainmentCenter:
         self.friendly_name = friendly_name
         self.description = description
         self.display_categories = display_categories
-        self.discovery = self.discovery()
 
-    def discovery(self):
+    def discovery(self, registered_things):
+        endpoint_list = []
         endpoint = {
                 "endpointId": self.endpoint_id,
                 "manufacturerName": self.manufacturer,
@@ -57,7 +58,11 @@ class AlexaEntertainmentCenter:
             }
         for capability in self.capabilities:
             endpoint["capabilities"].append(capability.discovery())
-        return [endpoint]
+        for thing in registered_things:
+            endpoint["endpointId"] = thing["thingName"]
+            endpoint["friendlyName"] = thing["thingName"]
+            endpoint_list.append(copy.deepcopy(endpoint))
+        return endpoint_list
 
     def discovery_json(self):
         return json.dumps(self.discovery, indent=4, sort_keys=True)
