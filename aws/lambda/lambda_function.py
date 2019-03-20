@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 from uuid import uuid4
 import time
@@ -46,18 +44,8 @@ def lambda_handler(event, context):
             receiver.set_volume(iot_device.get_receiver_volume())
     if header["namespace"] == "Alexa.Discovery":
         if header["name"] == "Discover":
-            endpoint_list = []
             all_things = IoTDevices.get_all_things()
-            all_endpoints = alexa_ent_center.discovery(all_things)
-            header["name"] = "Discover.Response"
-            return_message = {
-                "event": {
-                    "header": header,
-                    "payload": { "endpoints": all_endpoints }
-                }
-            }
-            print(json.dumps(return_message))
-            return return_message
+            return alexa_ent_center.discovery(header, all_things)
     elif header["namespace"] == "Alexa.PowerController":
         return power_control(iot_device, tv, header, endpoint, payload)
     elif header["namespace"] == "Alexa.Speaker":

@@ -21,7 +21,6 @@ def get_all_things():
     thing_list = iot.list_things(maxResults=50, 
                                 thingTypeName='Entertainment-Center')
     while 'things' in thing_list:
-        print(json.dumps(thing_list))
         for thing in thing_list['things']:
             return_things.append(thing)
         if 'nextToken' in thing_list:

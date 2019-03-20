@@ -31,6 +31,8 @@ def resolve_response_name(header):
     name = "Response"
     if header["namespace"] == "Alexa" and header["name"] == "ReportState":
         name = "StateReport"
+    elif header["namespace"] == "Alexa.Discovery" and header["name"] == "Discover":
+        name = "Discover.Response"
     return name
 
 
@@ -46,7 +48,7 @@ class AlexaEntertainmentCenter:
         self.description = description
         self.display_categories = display_categories
 
-    def discovery(self, registered_things):
+    def discovery(self, header, registered_things):
         endpoint_list = []
         endpoint = {
                 "endpointId": self.endpoint_id,
@@ -62,7 +64,15 @@ class AlexaEntertainmentCenter:
             endpoint["endpointId"] = thing["thingName"]
             endpoint["friendlyName"] = thing["thingName"]
             endpoint_list.append(copy.deepcopy(endpoint))
-        return endpoint_list
+        response_header = copy.deepcopy(header)
+        response_header["name"] = resolve_response_name(header)
+        return_message = {
+            "event": {
+                "header": response_header,
+                "payload": { "endpoints": endpoint_list }
+            }
+        }
+        return return_message
 
     def discovery_json(self):
         return json.dumps(self.discovery, indent=4, sort_keys=True)
