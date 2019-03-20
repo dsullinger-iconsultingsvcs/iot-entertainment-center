@@ -51,7 +51,7 @@ iot_client.configureCredentials("%s/%s" % (cert_path, root_cert),
                                 "%s/%s-certificate.pem.crt" % (cert_path, cert_prefix))
 iot_client.connect()
 
-iot_handler = iot_client.createShadowHandlerWithName("Entertainment-Center", True)
+iot_handler = iot_client.createShadowHandlerWithName(iot_tv_config['shadowClient'], True)
 iot_container_bot = callbackContainer(iot_handler)
 
 last_status = ent_center.get_status()
