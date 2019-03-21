@@ -7,12 +7,12 @@ class RokuDevice:
     def __init__(self, address, port):
         self.address = address
         self.port = port
-        self.http_connection = http.client.HTTPConnection(address, port)
         self.get_device_info()
 
     def get_device_info(self):
-        self.http_connection.request('GET', '/query/device-info')
-        get_response = self.http_connection.getresponse()
+        conn = http.client.HTTPConnection(self.address, self.port)
+        conn.request('GET', '/query/device-info')
+        get_response = conn.getresponse()
         xml_data = get_response.read()
         DOMTree = xml.dom.minidom.parseString(xml_data)
         device_info = DOMTree.documentElement
@@ -24,7 +24,8 @@ class RokuDevice:
             n = n.nextSibling
 
     def keypress(self, key):
-        self.http_connection.request('POST', '/keypress/%s' % key)
+        conn = http.client.HTTPConnection(self.address, self.port)
+        conn.request('POST', '/keypress/%s' % key)
 
 class RokuDevices:
     # pylint: disable=no-member
@@ -35,9 +36,8 @@ class RokuDevices:
             addr_port = device.location.split('/')[2]
             [addr, port] = addr_port.split(':')
             roku_dev = RokuDevice(addr, port)
-            print("adding %s to list" % roku_dev.friendly_device_name)
             devices[roku_dev.friendly_device_name] = \
-                roku_dev.friendly_device_name
+                roku_dev
         self.devices = devices
     
     def get_device(self, name):

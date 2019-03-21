@@ -17,16 +17,16 @@ class EntertainmentCenter:
     def __init__(self, config=None):
         cec.init()
         device_list = cec.list_devices()
-        self.roku = False
-
+        self.roku_dev = None
         for dev in device_list:
             print(device_list[dev].osd_string)
-            if device_list[dev].osd_string == 'Roku' and 'RokuName' in config:
+            if device_list[dev].osd_string == 'Roku' and 'rokuName' in config:
+                print("Finding address for Roku %s" % config['rokuName'])
                 all_devices = RokuDevice.RokuDevices()
                 try:
-                    self.roku_dev = all_devices.get_device(config['RokuName'])
+                    self.roku_dev = all_devices.get_device(config['rokuName'])
                 except:
-                    pass
+                    print("Did not find Roku Device %s" % config['rokuName'])
         self.television = None
         if 0 in device_list:
             self.television = { "address": "0",
@@ -128,8 +128,7 @@ class EntertainmentCenter:
         if power_state != None and power_state != self.television["powerState"]:
             tv = cec.Device(cec.CECDEVICE_TV)
             if power_state == "standby":
-                if self.roku_dev:
-                    print("Roku Home")
+                if self.roku_dev is not None:
                     self.roku_dev.keypress('Home')
                 print("TV Standby")
                 tv.standby()

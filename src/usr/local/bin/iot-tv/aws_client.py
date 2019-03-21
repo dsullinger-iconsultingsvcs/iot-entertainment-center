@@ -53,7 +53,7 @@ iot_client.connect()
 iot_handler = iot_client.createShadowHandlerWithName(iot_tv_config['shadowClient'], True)
 iot_container_bot = callbackContainer(iot_handler)
 
-ent_center = EntCenter.EntertainmentCenter()
+ent_center = EntCenter.EntertainmentCenter(iot_tv_config)
 
 last_status = ent_center.get_status()
 update_shadow(iot_handler, last_status)
