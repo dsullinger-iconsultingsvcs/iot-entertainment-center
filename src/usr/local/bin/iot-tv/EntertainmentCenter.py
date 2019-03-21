@@ -2,6 +2,9 @@
 import json
 import time
 import cec
+import ssdp
+import http.client
+import RokuDevice
 
 power_state = {
     0: "on",
@@ -11,11 +14,19 @@ power_state = {
 }
 
 class EntertainmentCenter:
-    def __init__(self):
+    def __init__(self, config=None):
         cec.init()
         device_list = cec.list_devices()
+        self.roku = False
+
         for dev in device_list:
             print(device_list[dev].osd_string)
+            if device_list[dev].osd_string == 'Roku' and 'RokuName' in config:
+                all_devices = RokuDevice.RokuDevices()
+                try:
+                    self.roku_dev = all_devices.get_device(config['RokuName'])
+                except:
+                    pass
         self.television = None
         if 0 in device_list:
             self.television = { "address": "0",
@@ -42,6 +53,8 @@ class EntertainmentCenter:
         return
 
     def broadcast_power_off(self):
+        if self.roku_dev is not None:
+            self.roku_dev.keypress('Home')
         broadcast = cec.Device(cec.CECDEVICE_BROADCAST)
         broadcast.standby()
         self.acquire_all_status()
@@ -115,6 +128,9 @@ class EntertainmentCenter:
         if power_state != None and power_state != self.television["powerState"]:
             tv = cec.Device(cec.CECDEVICE_TV)
             if power_state == "standby":
+                if self.roku_dev:
+                    print("Roku Home")
+                    self.roku_dev.keypress('Home')
                 print("TV Standby")
                 tv.standby()
             else:
