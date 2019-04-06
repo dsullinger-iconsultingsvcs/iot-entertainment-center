@@ -66,19 +66,31 @@ class EntertainmentCenter:
     
     def acquire_television_status(self):
         if self.television is not None:
-            power_info = power_state[cec.power_status(0)]
+            try:
+                power_info = power_state[cec.power_status(0)]
 
-            self.television["powerState"] = power_info
+                self.television["powerState"] = power_info
+            except:
+                self.television["powerState"] = 'exception'
         return
     
     def acquire_receiver_status(self):
         if self.receiver is not None:
-            power_info = power_state[cec.power_status(5)]
-            self.receiver["powerState"] = power_info
-            if power_info == "on":
-                volume_info = self.get_volume_info(cec.audio_status(True))
-                self.receiver["mute"] = volume_info["muted"]
-                self.receiver["volume"] = volume_info["volume"]
+            try:
+                power_info = power_state[cec.power_status(5)]
+                self.receiver["powerState"] = power_info
+                if power_info == "on":
+                    try:
+                        volume_info = self.get_volume_info(cec.audio_status(True))
+                        self.receiver["mute"] = volume_info["muted"]
+                        self.receiver["volume"] = volume_info["volume"]
+                    except:
+                        self.receiver["mute"] = None
+                        self.receiver["volume"] = None
+            except:
+                self.receiver["powerState"] = 'exception'
+                self.receiver["mute"] = None
+                self.receiver["volume"] = None
         return
 
     def set_receiver_status(self, power_state=None, mute=None, volume=None, receiver_state=None):
@@ -96,16 +108,46 @@ class EntertainmentCenter:
         self.acquire_receiver_status()
         if power_state != None and power_state != self.receiver["powerState"]:
             receiver = cec.Device(cec.CECDEVICE_AUDIOSYSTEM)
+            retry_count = 0
             if power_state == "standby":
-                receiver.standby()
+                while retry_count < 5:
+                    try:
+                        receiver.standby()
+                        break
+                    except:
+                        print("Error setting audio system power state to standby")
+                        retry_count += 1
+                        print("retrying %d" % retry_count)
             else:
-                receiver.power_on()
+                while retry_count < 5:
+                    try:
+                        receiver.power_on()
+                        break
+                    except:
+                        print("Error setting audio system power state to on")
+                        retry_count += 1
+                        print("retrying %d" % retry_count)
             self.receiver["powerState"] = power_state
         if mute != None and mute != self.receiver["mute"]:
+            retry_count = 0
             if mute:
-                cec.toggle_mute()
+                while retry_count < 5:
+                    try:
+                        cec.toggle_mute()
+                        break
+                    except:
+                        print("Error setting audio system mute")
+                        retry_count += 1
+                        print("retrying %d" % retry_count)
             else:
-                cec.toggle_mute()
+                while retry_count < 5:
+                    try:
+                        cec.toggle_mute()
+                        break
+                    except:
+                        print("Error setting audio system mute (first)")
+                        retry_count += 1
+                        print("retrying %d" % retry_count)
             self.receiver["mute"] = mute
         if volume != None and self.receiver["volume"] != None and \
           volume != self.receiver["volume"] and volume != -1:
@@ -131,7 +173,15 @@ class EntertainmentCenter:
                 if self.roku_dev is not None:
                     self.roku_dev.keypress('Home')
                 print("TV Standby")
-                tv.standby()
+                retry_count = 0
+                while retry_count < 5:
+                    try:
+                        tv.standby()
+                        break
+                    except:
+                        print("Exception with TV Standby")
+                        retry_count += 1
+                        print("Retrying %d" % retry_count)
             else:
                 print("TV Power On")
                 tv.power_on()
