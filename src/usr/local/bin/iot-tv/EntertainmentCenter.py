@@ -54,7 +54,10 @@ class EntertainmentCenter:
 
     def broadcast_power_off(self):
         if self.roku_dev is not None:
+            self.roku_dev.keypress('Back')
+            time.sleep(1)
             self.roku_dev.keypress('Home')
+            time.sleep(1)
         broadcast = cec.Device(cec.CECDEVICE_BROADCAST)
         broadcast.standby()
         self.acquire_all_status()
@@ -171,7 +174,10 @@ class EntertainmentCenter:
             tv = cec.Device(cec.CECDEVICE_TV)
             if power_state == "standby":
                 if self.roku_dev is not None:
+                    self.roku_dev.keypress('Back')
+                    time.sleep(1)
                     self.roku_dev.keypress('Home')
+                    time.sleep(1)
                 print("TV Standby")
                 retry_count = 0
                 while retry_count < 5:
